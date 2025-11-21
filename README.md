@@ -12,10 +12,8 @@
 ├─ .gitignore
 │
 ├─ data/
-│  ├─ raw/
-│  │  └─ articles_sample_200.csv
-│  └─ external/
-│     └─ profile_keywords_template.csv
+│  ├─ articles_sample_200.csv
+│  └─ profile_keywords_template.csv
 │
 ├─ models/
 │  └─ tfidf_vectorizer.joblib   # plus tard: vectorizer sauvegarde
@@ -28,6 +26,20 @@
 │  ├─ profile_builder.py       # construit le profil user
 │  ├─ recommender.py           # logique des recos + feedback
 │  └─ utils.py                 # fonctions diverses (logging, nettoyage...)
+│
+├─ app/
+│  ├─ app.py                 # FastAPI app
+│  ├─ templates/
+│  │  ├─ img/                # images used in html pages
+│  │  ├─ base.html
+│  │  ├─ index.html          # page 1 : preferences + bouton Explore
+│  │  ├─ explore.html        # page 2 : reco + barre de recherche
+│  │  └─ article.html        # page 3 : fiche article + similaires
+│  │
+│  └─ static/
+│     ├─ styles.css
+│     ├─ explore.js
+│     └─ article.js
 │
 └─ notebooks/
    └─ 01_exploration.ipynb     # EDA articles + tests TF-IDF / recos
