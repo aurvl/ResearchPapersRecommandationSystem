@@ -1,0 +1,19 @@
+dimension,option,keywords
+field,machine_learning,machine learning supervised learning unsupervised learning classification regression clustering data mining
+field,deep_learning,deep learning neural networks convolutional networks recurrent networks transformers representation learning
+field,econometrics,econometrics regression panel data instrumental variables causal inference time series ardl vecm gmm
+field,finance,financial markets asset pricing portfolio optimization volatility risk management derivatives options stocks bonds
+field,environmental_economics,environmental economics climate change carbon emissions blue carbon fisheries pollution sustainability ecosystem services
+field,recommender_systems,recommender systems collaborative filtering content based recommendation ranking user preference personalization
+field,nlp,natural language processing text mining language models word embeddings transformers sentiment analysis
+field,time_series,time series forecasting autoregressive models arima vector autoregression volatility modeling seasonality trends
+method,bayesian,bayesian inference posterior distribution prior distribution probabilistic modeling markov chain monte carlo
+method,frequentist,maximum likelihood estimation hypothesis testing confidence intervals regression models
+method,causal_inference,causal inference treatment effect counterfactual difference in differences propensity score matching
+method,deep_models,deep neural network convolution recurrent attention transformer end to end learning
+type,theoretical,theoretical analysis mathematical formulation proofs convergence properties asymptotic results
+type,empirical,empirical study real world data estimation experimental evaluation numerical results
+type,survey,survey review related work literature overview taxonomy comprehensive summary
+impact,high_impact,policy implications significant impact real world decision making large scale applications
+impact,applied_industry,industrial application business case study real world deployment production system operational constraints
+impact,academic_focus,academic contribution methodological innovation benchmark dataset theoretical originality
