@@ -212,12 +212,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const input = document.querySelector('#search');
+            const form = document.querySelector('form');
+            let tagifyInstance = null;
             
             // Fetch tags from backend
             fetch('/api/tags')
                 .then(response => response.json())
                 .then(tags => {
-                    const tagify = new Tagify(input, {
+                    tagifyInstance = new Tagify(input, {
                         whitelist: tags,
                         enforceWhitelist: false,
                         dropdown: {
@@ -229,6 +231,31 @@
                     });
                 })
                 .catch(err => console.error('Error loading tags:', err));
+
+            // Handle Form Submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+
+                let tagString = "";
+
+                if (tagifyInstance) {
+                    // Get tags from Tagify instance
+                    const tags = tagifyInstance.value; 
+                    if (tags && tags.length > 0) {
+                        tagString = tags.map(t => t.value).join(',');
+                    }
+                } else {
+                    // Fallback if Tagify didn't load
+                    tagString = input.value;
+                }
+
+                // Redirect with tags parameter
+                if (tagString) {
+                    window.location.href = `/explore?tags=${encodeURIComponent(tagString)}`;
+                } else {
+                    window.location.href = '/explore';
+                }
+            });
         });
     </script>
 

@@ -144,7 +144,7 @@
                 <div class="glass-panel rounded-xl overflow-hidden flex flex-col h-80 group hover:scale-[1.02] transition-transform duration-300 relative">
                     <!-- Image (1/3) -->
                     <a href="/article/{{ article.id }}" class="h-1/3 w-full relative overflow-hidden bg-gray-200 dark:bg-gray-700 block">
-                        <img src="https://source.unsplash.com/random/400x200/?{{ article.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <img src="{{ article.url if article.url and (article.url.endswith('.jpg') or article.url.endswith('.png')) else 'https://source.unsplash.com/random/400x200/?' ~ article.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                     </a>
                     <!-- Content (2/3) -->
                     <div class="p-4 flex flex-col flex-grow">
@@ -160,7 +160,7 @@
                         </p>
                         
                         <!-- Like Button -->
-                        <button class="like-btn absolute bottom-3 right-3 p-2 rounded-lg bg-white/50 dark:bg-black/30 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all shadow-sm" onclick="this.classList.toggle('text-red-500'); this.querySelector('svg').classList.toggle('fill-current');">
+                        <button class="like-btn absolute bottom-3 right-3 p-2 rounded-lg bg-white/50 dark:bg-black/30 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all shadow-sm" onclick="toggleLike(this, '{{ article.id }}')">
                             <svg class="w-5 h-5 text-gray-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                         </button>
                     </div>
@@ -179,13 +179,13 @@
 
         <!-- Section B: Also Recommended (No Like Button) -->
         <section>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div id="recommended-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 
                 {% for article in recommended %}
                 <!-- Card -->
                 <div class="glass-panel rounded-xl overflow-hidden flex flex-col h-80 group hover:scale-[1.02] transition-transform duration-300">
                     <a href="/article/{{ article.id }}" class="h-1/3 w-full relative overflow-hidden bg-gray-200 dark:bg-gray-700 block">
-                        <img src="https://source.unsplash.com/random/400x200/?{{ article.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <img src="{{ article.url if article.url and (article.url.endswith('.jpg') or article.url.endswith('.png')) else 'https://source.unsplash.com/random/400x200/?' ~ article.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                     </a>
                     <div class="p-4 flex flex-col flex-grow">
                         <div class="mb-1"><span class="text-[10px] uppercase tracking-wider font-bold text-teal-600 dark:text-teal-400">{{ article.field }}</span></div>
@@ -241,5 +241,70 @@
         });
     </script>
     <script src="/static/search.js"></script>
+    <script>
+        function toggleLike(btn, articleId) {
+            const svg = btn.querySelector('svg');
+            
+            // Check if currently liked
+            if (svg.classList.contains('text-red-500')) {
+                // Remove like (Revert to default)
+                svg.classList.remove('text-red-500', 'fill-current', 'stroke-none', 'transform', 'scale-110');
+                svg.classList.add('text-gray-400', 'fill-none', 'stroke-current');
+            } else {
+                // Add like (Apply active)
+                svg.classList.remove('text-gray-400', 'fill-none', 'stroke-current');
+                svg.classList.add('text-red-500', 'fill-current', 'stroke-none', 'transform', 'scale-110', 'transition-transform', 'duration-200');
+            }
+
+            // Get current tags from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentTags = urlParams.get('tags') || '';
+
+            // Send request
+            fetch('/api/interact/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    article_id: articleId,
+                    tags: currentTags
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('recommended-container');
+                container.innerHTML = ''; // Clear
+
+                data.forEach(article => {
+                    // Construct HTML
+                    // Handle image URL logic
+                    let imgUrl = article.url && (article.url.endsWith('.jpg') || article.url.endsWith('.png')) 
+                        ? article.url 
+                        : `https://source.unsplash.com/random/400x200/?${article.field || 'science'}`;
+
+                    const cardHtml = `
+                        <div class="glass-panel rounded-xl overflow-hidden flex flex-col h-80 group hover:scale-[1.02] transition-transform duration-300">
+                            <a href="/article/${article.id}" class="h-1/3 w-full relative overflow-hidden bg-gray-200 dark:bg-gray-700 block">
+                                <img src="${imgUrl}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            </a>
+                            <div class="p-4 flex flex-col flex-grow">
+                                <div class="mb-1"><span class="text-[10px] uppercase tracking-wider font-bold text-teal-600 dark:text-teal-400">${article.field}</span></div>
+                                <a href="/article/${article.id}" class="font-bold text-base leading-tight mb-2 text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                    ${article.title}
+                                </a>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">${article.author}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-300 line-clamp-3 opacity-80">
+                                    ${article.abstract}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            })
+            .catch(error => console.error('Error updating recommendations:', error));
+        }
+    </script>
 </body>
 </html>

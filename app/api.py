@@ -1,9 +1,10 @@
 # app/main.py
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Optional
 
 from src.data_loading import load_articles, load_profile_keywords
 from src.text_vectorizer import fit_vectorizer
@@ -38,35 +39,81 @@ def index(request: Request):
 
 
 @app.get("/explore", response_class=HTMLResponse)
-def explore_page(request: Request):
-    # Select 5 featured articles (e.g., top cited)
-    featured = articles_df.sort_values("cite_nb", ascending=False).head(5).to_dict(orient="records")
-    
-    # Select 5 recommended articles (e.g., next 5 top cited or random)
-    # Let's take the next 5 top cited for now to be deterministic
-    recommended = articles_df.sort_values("cite_nb", ascending=False).iloc[5:10].to_dict(orient="records")
-    
-    # Page principale (reco + recherche)
+def explore_page(request: Request, tags: Optional[str] = None):
+    """
+    Main logic hub for the Explore page.
+    Handles both "Hot/Trending" (no tags) and "Personalized" (with tags) scenarios.
+    """
+    featured = []
+    recommended = []
+
+    try:
+        if tags:
+            # Scenario A: User entered tags
+            # Parse tags: "Machine Learning, NLP" -> ["machine_learning", "nlp"]
+            tag_list = [t.strip().lower().replace(" ", "_") for t in tags.split(",") if t.strip()]
+            
+            if tag_list:
+                # Create preference dictionary mapping tags to fields and keywords
+                # We map to both 'field' and 'keywords' dimensions to be safe/broad
+                prefs = {
+                    "field": tag_list,
+                    "keywords": tag_list
+                }
+                
+                # Build profile and vectorize
+                profile_text = build_profile_text(prefs, profile_kw_df)
+                
+                # If profile_text is empty (no tags matched), fallback to hot
+                if not profile_text.strip():
+                     recs_df = recommend_hot_articles(articles_df, top_k=10)
+                else:
+                    v_profile = profile_to_vector(profile_text, vectorizer)
+                    # Get top 10 recommendations
+                    recs_df = recommend_for_profile(v_profile, X_tfidf, articles_df, top_k=10)
+            else:
+                 recs_df = recommend_hot_articles(articles_df, top_k=10)
+        else:
+            # Scenario B: No tags / Empty -> Show Hot Articles
+            recs_df = recommend_hot_articles(articles_df, top_k=10)
+
+        # Split Strategy
+        # Featured: Top 1-5
+        featured = recs_df.head(5).to_dict(orient="records")
+        
+        # Recommended: Top 6-10 (if available)
+        if len(recs_df) > 5:
+            recommended = recs_df.iloc[5:].to_dict(orient="records")
+        else:
+            recommended = []
+
+    except Exception as e:
+        print(f"Error in explore_page: {e}")
+        # Fallback to hot articles in case of error
+        try:
+            recs_df = recommend_hot_articles(articles_df, top_k=10)
+            featured = recs_df.head(5).to_dict(orient="records")
+            recommended = recs_df.iloc[5:].to_dict(orient="records")
+        except Exception:
+            featured = []
+            recommended = []
+
+    # Render template
     return templates.TemplateResponse("explore.html", {
         "request": request,
         "featured": featured,
-        "recommended": recommended
+        "recommended": recommended,
+        "current_tags": tags or ""
     })
 
 
 @app.get("/article/{article_id}", response_class=HTMLResponse)
 def article_page(article_id: str, request: Request):
     # Find the article in the dataframe
-    # Assuming article_id is a string, but in DF it might be int or string. 
-    # Let's try to match loosely or convert.
-    
     # Check if ID exists
     article_row = articles_df[articles_df["id"].astype(str) == article_id]
     
     if article_row.empty:
-        # Fallback or 404 - for now just return the template with a "Not Found" flag or similar
-        # Or better, raise HTTPException
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Article not found")
     
     article_data = article_row.iloc[0].to_dict()
@@ -92,6 +139,35 @@ def article_page(article_id: str, request: Request):
 class ProfileRequest(BaseModel):
     prefs: dict
     liked_ids: list[str] = []
+
+
+class LikeRequest(BaseModel):
+    article_id: str
+    tags: Optional[str] = None
+
+
+@app.post("/api/interact/like")
+def api_interact_like(req: LikeRequest):
+    # 1. Build base profile from tags
+    if req.tags:
+        tag_list = [t.strip().lower().replace(" ", "_") for t in req.tags.split(",") if t.strip()]
+        prefs = {"field": tag_list, "keywords": tag_list}
+        profile_text = build_profile_text(prefs, profile_kw_df)
+    else:
+        profile_text = ""
+
+    # 2. Vectorize base profile
+    # If profile_text is empty, vectorizer.transform([""]) returns a zero vector, which is what we want
+    v_profile = vectorizer.transform([profile_text])
+
+    # 3. Update with the new like
+    # We treat this single like as an update to the session profile
+    v_updated = update_profile_with_likes(v_profile, [req.article_id], X_tfidf, articles_df)
+
+    # 4. Recommend (exclude the liked article)
+    recs = recommend_for_profile(v_updated, X_tfidf, articles_df, top_k=5, exclude_ids={req.article_id})
+    
+    return recs.to_dict(orient="records")
 
 
 @app.post("/api/recommend/profile")
@@ -126,7 +202,7 @@ def api_search(q: str):
     df = articles_df[articles_df["title"].str.contains(q, case=False, na=False)]
     
     # Return top 10 results with specific fields
-    results = df[["id", "title", "author"]].head(10).to_dict(orient="records")
+    results = df[["id", "title", "author", "field"]].head(10).to_dict(orient="records")
     return results
 
 
