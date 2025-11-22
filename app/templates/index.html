@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Next Study</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tagify CSS & JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        glass: {
+                            light: 'rgba(255, 255, 255, 0.7)',
+                            dark: 'rgba(17, 24, 39, 0.7)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        .dark .glass-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Input Glass Style */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(209, 213, 219, 0.5);
+        }
+        
+        .dark .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+        }
+
+        /* Tagify Customization for Glassmorphism */
+        .tagify {
+            --tags-border-color: rgba(209, 213, 219, 0.5);
+            --tags-focus-border-color: #3b82f6;
+            --tag-bg: rgba(255, 255, 255, 0.6);
+            --tag-hover: rgba(255, 255, 255, 0.8);
+            --tag-text-color: #111827;
+            --placeholder-color: #6b7280;
+            --placeholder-color-focus: #6b7280;
+            
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 0.75rem;
+            padding-left: 2.5rem; /* Space for the icon */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            transition: all 0.2s;
+            
+            /* Flexbox layout to ensure input takes space */
+            display: flex !important;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .dark .tagify {
+            --tags-border-color: rgba(75, 85, 99, 0.5);
+            --tags-focus-border-color: #60a5fa;
+            --tag-bg: rgba(255, 255, 255, 0.15);
+            --tag-hover: rgba(255, 255, 255, 0.25);
+            --tag-text-color: #f3f4f6;
+            --placeholder-color: #9ca3af;
+            
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .tagify__input {
+            color: inherit;
+            flex-grow: 1; /* Force input to take remaining space */
+            min-width: 150px; /* Ensure placeholder is visible */
+            margin: 0 !important;
+        }
+
+        .tagify__input::before {
+            color: var(--placeholder-color);
+            line-height: inherit;
+        }
+        
+        /* Fix for Tagify dropdown in dark mode */
+        .tagify__dropdown {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .dark .tagify__dropdown {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .tagify__dropdown__item--active {
+            background: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300 overflow-hidden">
+
+    <!-- Theme Toggle Button (Absolute Top Right) -->
+    <button id="theme-toggle" class="absolute top-6 right-6 z-50 p-2.5 rounded-full glass-panel hover:bg-white/40 dark:hover:bg-black/60 transition-all focus:outline-none group" aria-label="Toggle Theme">
+        <!-- Sun Icon (for Dark Mode) -->
+        <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+        </svg>
+        <!-- Moon Icon (for Light Mode) -->
+        <svg id="theme-toggle-dark-icon" class="hidden w-6 h-6 text-gray-700 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+        </svg>
+    </button>
+
+    <div class="flex h-screen w-full">
+        
+        <!-- LEFT COLUMN: Main Content -->
+        <div class="w-full lg:w-1/2 flex flex-col relative z-10 bg-white/60 dark:bg-gray-900/80 backdrop-blur-sm transition-colors duration-300">
+            
+            <!-- Centered Content Wrapper -->
+            <div class="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 lg:px-20">
+                
+                <!-- Main Title -->
+                <h1 class="text-5xl md:text-6xl font-extrabold mb-10 tracking-tight text-center">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+                        The Next Study
+                    </span>
+                </h1>
+
+                <!-- Glassmorphism Search Container -->
+                <div class="w-full max-w-md p-8 rounded-2xl glass-panel transition-all duration-300">
+                    <form action="/explore" method="GET" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="search" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">
+                                What interests you?
+                            </label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <input type="text" name="q" id="search" 
+                                    class="text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="Keywords, topics..." value="">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
+                            <span>Explore</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 text-center">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 opacity-80">
+                    Développé par x1, x2 et x3
+                </p>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Visual -->
+        <div class="hidden lg:block w-1/2 relative h-full overflow-hidden">
+            <!-- Image Placeholder -->
+            <img src="/static/img/font1.png" 
+                 alt="Library Background" 
+                 class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105">
+            
+            <!-- Overlay Gradient for better integration -->
+            <div class="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-black/5 dark:to-black/40 pointer-events-none"></div>
+        </div>
+    </div>
+
+    <!-- Tagify Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.querySelector('#search');
+            
+            // Fetch tags from backend
+            fetch('/api/tags')
+                .then(response => response.json())
+                .then(tags => {
+                    const tagify = new Tagify(input, {
+                        whitelist: tags,
+                        enforceWhitelist: false,
+                        dropdown: {
+                            maxItems: 20,
+                            classname: "tags-look",
+                            enabled: 0,
+                            closeOnSelect: false
+                        }
+                    });
+                })
+                .catch(err => console.error('Error loading tags:', err));
+        });
+    </script>
+
+    <!-- Theme Toggle Logic -->
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Check local storage or system preference
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // Toggle icons
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            // If is set in local storage
+            if (localStorage.getItem('color-theme')) {
+                if (localStorage.getItem('color-theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                }
+            } else {
+                // If not set in local storage
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

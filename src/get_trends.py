@@ -43,13 +43,36 @@ def get_trends_from_corpus(
     trends = [w for (w, _) in counter.most_common(n_terms)]
     return trends
 
-def _get_cache_path_for_today() -> Path:
-    today_str = datetime.utcnow().strftime("%Y%m%d")
+def _get_previous_week_dates():
+    """
+    Returns (start_date, end_date) for the previous full week (Monday to Sunday).
+    """
+    today = datetime.utcnow()
+    # 0 = Monday, 6 = Sunday
+    days_since_monday = today.weekday()
+    monday_of_current_week = today - timedelta(days=days_since_monday)
+    
+    # Previous Monday
+    start_date = monday_of_current_week - timedelta(days=7)
+    # Previous Sunday
+    end_date = start_date + timedelta(days=6)
+    
+    return start_date, end_date
+
+def _get_cache_path_for_previous_week() -> Path:
+    start_date, _ = _get_previous_week_dates()
+    
+    # Naming based on the Monday of that week
+    year = start_date.year
+    month = start_date.month
+    week_of_month = (start_date.day - 1) // 7 + 1
+    
+    cache_trend_name = f"arxiv_trends_{year}_{month}_w{week_of_month}.json"
     DATA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return DATA_CACHE_DIR / f"arxiv_trends_{today_str}.json"
+    return DATA_CACHE_DIR / cache_trend_name
 
 def _load_trends_from_cache() -> list[str]:
-    path = _get_cache_path_for_today()
+    path = _get_cache_path_for_previous_week()
     if path.exists():
         try:
             with path.open("r", encoding="utf-8") as f:
@@ -63,7 +86,7 @@ def _load_trends_from_cache() -> list[str]:
 
 
 def _save_trends_to_cache(trends: list[str]) -> None:
-    path = _get_cache_path_for_today()
+    path = _get_cache_path_for_previous_week()
     try:
         DATA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
         with path.open("w", encoding="utf-8") as f:
@@ -72,17 +95,16 @@ def _save_trends_to_cache(trends: list[str]) -> None:
         print("Erreur ecriture cache tendances:", e)
 
 
-def get_trending_from_arxiv(max_results=10, days=7):
+def get_trending_from_arxiv(max_results=10):
     """
     Retourne une liste de titres (ou keywords) d'articles recents sur arXiv.
 
-    Cible : les soumissions des X derniers jours.
+    Tarhet : semaine précédente complet (Lundi à Dimanche).
     """
-    today = datetime.utcnow()
-    last_days = today - timedelta(days=days)
+    start_dt, end_dt = _get_previous_week_dates()
 
-    start_date = last_days.strftime("%Y%m%d")
-    end_date = today.strftime("%Y%m%d")
+    start_date = start_dt.strftime("%Y%m%d")
+    end_date = end_dt.strftime("%Y%m%d")
 
     query = f"submittedDate:[{start_date}0000 TO {end_date}2359]"
 
@@ -150,5 +172,3 @@ if __name__ == "__main__":
     print("HOT TERMS:")
     for t in terms:
         print(" -", t)
-
-

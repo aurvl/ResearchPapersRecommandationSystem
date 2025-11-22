@@ -13,8 +13,8 @@ DATA_DIR = PROJECT_ROOT / "data"
 DATA_CACHE_DIR = DATA_DIR / "cache"
 
 # Fichiers de donnees
-ARTICLES_PATH = DATA_DIR / "articles_sample_200.csv"
-PROFILE_KEYWORDS_PATH = DATA_DIR / "profile_keywords_template.csv"
+ARTICLES_PATH = DATA_DIR / "articles_sample.csv"
+PROFILE_KEYWORDS_PATH = DATA_DIR / "profile_keywords.csv"
 
 # Dossier pour les modeles sauvegardes
 MODELS_DIR = PROJECT_ROOT / "models"

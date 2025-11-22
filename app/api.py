@@ -39,14 +39,52 @@ def index(request: Request):
 
 @app.get("/explore", response_class=HTMLResponse)
 def explore_page(request: Request):
+    # Select 5 featured articles (e.g., top cited)
+    featured = articles_df.sort_values("cite_nb", ascending=False).head(5).to_dict(orient="records")
+    
+    # Select 5 recommended articles (e.g., next 5 top cited or random)
+    # Let's take the next 5 top cited for now to be deterministic
+    recommended = articles_df.sort_values("cite_nb", ascending=False).iloc[5:10].to_dict(orient="records")
+    
     # Page principale (reco + recherche)
-    return templates.TemplateResponse("explore.html", {"request": request})
+    return templates.TemplateResponse("explore.html", {
+        "request": request,
+        "featured": featured,
+        "recommended": recommended
+    })
 
 
 @app.get("/article/{article_id}", response_class=HTMLResponse)
 def article_page(article_id: str, request: Request):
+    # Find the article in the dataframe
+    # Assuming article_id is a string, but in DF it might be int or string. 
+    # Let's try to match loosely or convert.
+    
+    # Check if ID exists
+    article_row = articles_df[articles_df["id"].astype(str) == article_id]
+    
+    if article_row.empty:
+        # Fallback or 404 - for now just return the template with a "Not Found" flag or similar
+        # Or better, raise HTTPException
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Article not found")
+    
+    article_data = article_row.iloc[0].to_dict()
+    
+    # Get similar articles
+    try:
+        recs = recommend_similar_to_article(article_id, X_tfidf, articles_df, top_k=5)
+        recs_list = recs.to_dict(orient="records")
+    except Exception as e:
+        print(f"Error getting recommendations: {e}")
+        recs_list = []
+
     # Page détail article
-    return templates.TemplateResponse("article.html", {"request": request, "article_id": article_id})
+    return templates.TemplateResponse("article.html", {
+        "request": request, 
+        "article": article_data,
+        "recommendations": recs_list
+    })
 
 
 # ---------- API JSON ----------
@@ -84,8 +122,23 @@ def api_recommend_similar(article_id: str, top_k: int = 5):
 
 @app.get("/api/search")
 def api_search(q: str):
-    df = articles_df[
-        articles_df["title"].str.contains(q, case=False)
-        | articles_df["abstract"].str.contains(q, case=False)
-    ]
-    return df.head(10).to_dict(orient="records")
+    # Filter for titles containing the query (case-insensitive)
+    df = articles_df[articles_df["title"].str.contains(q, case=False, na=False)]
+    
+    # Return top 10 results with specific fields
+    results = df[["id", "title", "author"]].head(10).to_dict(orient="records")
+    return results
+
+
+@app.get("/api/tags")
+def get_tags():
+    """
+    Returns a list of formatted tags from the profile keywords CSV.
+    Example: ["Machine Learning", "Deep Learning", ...]
+    """
+    if "option" in profile_kw_df.columns:
+        # Get unique options, replace underscores with spaces, and title case
+        raw_options = profile_kw_df["option"].dropna().unique()
+        formatted_tags = [opt.replace("_", " ").title() for opt in raw_options]
+        return sorted(list(set(formatted_tags)))
+    return []

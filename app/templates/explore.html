@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore - The Next Study</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        glass: {
+                            light: 'rgba(255, 255, 255, 0.7)',
+                            dark: 'rgba(17, 24, 39, 0.7)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        .dark .glass-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Input Glass Style */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(209, 213, 219, 0.5);
+            color: #111827;
+        }
+        
+        .dark .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            color: #f3f4f6;
+        }
+
+        .glass-input::placeholder {
+            color: #6b7280;
+        }
+        .dark .glass-input::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Scrollbar hiding for horizontal scroll on mobile if needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+    <!-- Immediate Theme Check to prevent flash -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full glass-panel border-b border-white/20 px-4 sm:px-6 py-3 flex justify-between items-center">
+        <!-- Logo -->
+        <a href="/" class="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 hover:opacity-80 transition-opacity">
+            The Next Study
+        </a>
+        
+        <!-- Right Side Controls -->
+        <div class="flex items-center gap-3 sm:gap-4">
+            <!-- Compact Search Bar (Desktop) -->
+            <div class="relative hidden md:block w-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" id="search-desktop" placeholder="Search..." class="w-full pl-9 pr-4 py-1.5 rounded-full text-sm glass-input focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            </div>
+
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="p-2 rounded-full glass-panel hover:bg-white/40 dark:hover:bg-black/60 transition-all focus:outline-none group" aria-label="Toggle Theme">
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                </svg>
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-gray-700 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 space-y-8 md:space-y-12">
+        
+        <!-- Mobile Search Bar -->
+        <div class="relative md:hidden w-full">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input type="text" id="search-mobile" placeholder="Search topics, keywords..." class="w-full pl-10 pr-4 py-3 rounded-xl text-base glass-input focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
+        </div>
+
+        <!-- Section A: Similar Articles -->
+        <section>
+            <div class="flex items-center justify-between mb-6 px-2">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Featured Articles</h2>
+            </div>
+            
+            <!-- Grid Container -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                
+                {% for article in featured %}
+                <!-- Card -->
+                <div class="glass-panel rounded-xl overflow-hidden flex flex-col h-80 group hover:scale-[1.02] transition-transform duration-300 relative">
+                    <!-- Image (1/3) -->
+                    <a href="/article/{{ article.id }}" class="h-1/3 w-full relative overflow-hidden bg-gray-200 dark:bg-gray-700 block">
+                        <img src="https://source.unsplash.com/random/400x200/?{{ article.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    </a>
+                    <!-- Content (2/3) -->
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="mb-1">
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">{{ article.field }}</span>
+                        </div>
+                        <a href="/article/{{ article.id }}" class="font-bold text-base leading-tight mb-2 text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            {{ article.title }}
+                        </a>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ article.author }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 line-clamp-3 opacity-80">
+                            {{ article.abstract }}
+                        </p>
+                        
+                        <!-- Like Button -->
+                        <button class="like-btn absolute bottom-3 right-3 p-2 rounded-lg bg-white/50 dark:bg-black/30 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all shadow-sm" onclick="this.classList.toggle('text-red-500'); this.querySelector('svg').classList.toggle('fill-current');">
+                            <svg class="w-5 h-5 text-gray-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </section>
+
+        <!-- Middle Divider -->
+        <div class="relative flex items-center py-4 opacity-80">
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+            <span class="flex-shrink-0 mx-4 text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest">Also recommended for you</span>
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+        </div>
+
+        <!-- Section B: Also Recommended (No Like Button) -->
+        <section>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                
+                {% for article in recommended %}
+                <!-- Card -->
+                <div class="glass-panel rounded-xl overflow-hidden flex flex-col h-80 group hover:scale-[1.02] transition-transform duration-300">
+                    <a href="/article/{{ article.id }}" class="h-1/3 w-full relative overflow-hidden bg-gray-200 dark:bg-gray-700 block">
+                        <img src="https://source.unsplash.com/random/400x200/?{{ article.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    </a>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="mb-1"><span class="text-[10px] uppercase tracking-wider font-bold text-teal-600 dark:text-teal-400">{{ article.field }}</span></div>
+                        <a href="/article/{{ article.id }}" class="font-bold text-base leading-tight mb-2 text-gray-900 dark:text-white line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            {{ article.title }}
+                        </a>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ article.author }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 line-clamp-3 opacity-80">
+                            {{ article.abstract }}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-6 text-center">
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 opacity-80">
+            Développé par x1, x2 et x3
+        </p>
+    </footer>
+
+    <!-- Theme Toggle Logic -->
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Initial Icon State
+        if (document.documentElement.classList.contains('dark')) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // Toggle icons
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            // Toggle class and storage
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        });
+    </script>
+    <script src="/static/search.js"></script>
+</body>
+</html>
