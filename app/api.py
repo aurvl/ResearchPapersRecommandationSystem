@@ -9,6 +9,7 @@ from typing import Optional
 from src.data_loading import load_articles, load_profile_keywords
 from src.text_vectorizer import fit_vectorizer
 from src.profile_builder import build_profile_text, profile_to_vector
+from src.utils import get_article_image
 from src.recommender import (
     recommend_for_profile,
     recommend_hot_articles,
@@ -80,10 +81,14 @@ def explore_page(request: Request, tags: Optional[str] = None):
         # Split Strategy
         # Featured: Top 1-5
         featured = recs_df.head(5).to_dict(orient="records")
+        for f in featured:
+            f["image_url"] = get_article_image(f.get("field"))
         
         # Recommended: Top 6-10 (if available)
         if len(recs_df) > 5:
             recommended = recs_df.iloc[5:].to_dict(orient="records")
+            for r in recommended:
+                r["image_url"] = get_article_image(r.get("field"))
         else:
             recommended = []
 
@@ -93,7 +98,12 @@ def explore_page(request: Request, tags: Optional[str] = None):
         try:
             recs_df = recommend_hot_articles(articles_df, top_k=10)
             featured = recs_df.head(5).to_dict(orient="records")
+            for f in featured:
+                f["image_url"] = get_article_image(f.get("field"))
+            
             recommended = recs_df.iloc[5:].to_dict(orient="records")
+            for r in recommended:
+                r["image_url"] = get_article_image(r.get("field"))
         except Exception:
             featured = []
             recommended = []
@@ -117,11 +127,14 @@ def article_page(article_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Article not found")
     
     article_data = article_row.iloc[0].to_dict()
+    article_data["image_url"] = get_article_image(article_data.get("field"))
     
     # Get similar articles
     try:
         recs = recommend_similar_to_article(article_id, X_tfidf, articles_df, top_k=5)
         recs_list = recs.to_dict(orient="records")
+        for r in recs_list:
+            r["image_url"] = get_article_image(r.get("field"))
     except Exception as e:
         print(f"Error getting recommendations: {e}")
         recs_list = []
@@ -167,7 +180,10 @@ def api_interact_like(req: LikeRequest):
     # 4. Recommend (exclude the liked article)
     recs = recommend_for_profile(v_updated, X_tfidf, articles_df, top_k=5, exclude_ids={req.article_id})
     
-    return recs.to_dict(orient="records")
+    results = recs.to_dict(orient="records")
+    for r in results:
+        r["image_url"] = get_article_image(r.get("field"))
+    return results
 
 
 @app.post("/api/recommend/profile")
@@ -181,19 +197,28 @@ def api_recommend_profile(req: ProfileRequest):
         )
 
     recs = recommend_for_profile(v_profile, X_tfidf, articles_df, top_k=5)
-    return recs.to_dict(orient="records")
+    results = recs.to_dict(orient="records")
+    for r in results:
+        r["image_url"] = get_article_image(r.get("field"))
+    return results
 
 
 @app.get("/api/recommend/hot")
 def api_recommend_hot(top_k: int = 5):
     recs = recommend_hot_articles(articles_df, top_k)
-    return recs.to_dict(orient="records")
+    results = recs.to_dict(orient="records")
+    for r in results:
+        r["image_url"] = get_article_image(r.get("field"))
+    return results
 
 
 @app.get("/api/recommend/similar/{article_id}")
 def api_recommend_similar(article_id: str, top_k: int = 5):
     recs = recommend_similar_to_article(article_id, X_tfidf, articles_df, top_k)
-    return recs.to_dict(orient="records")
+    results = recs.to_dict(orient="records")
+    for r in results:
+        r["image_url"] = get_article_image(r.get("field"))
+    return results
 
 
 @app.get("/api/search")
@@ -203,6 +228,8 @@ def api_search(q: str):
     
     # Return top 10 results with specific fields
     results = df[["id", "title", "author", "field"]].head(10).to_dict(orient="records")
+    for r in results:
+        r["image_url"] = get_article_image(r.get("field"))
     return results
 
 

@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from xml.etree import ElementTree as ET
 from pathlib import Path
 from src.config import ARXIV_API_URL, DATA_CACHE_DIR
+from nltk.corpus import stopwords
 
 def simple_tokenize(text: str) -> list[str]:
     text = text.lower()
@@ -14,8 +15,8 @@ def simple_tokenize(text: str) -> list[str]:
     text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
     tokens = text.split()
     # mots vides minimalistes
-    stopwords = {"the", "and", "of", "in", "for", "on", "a", "an", "to", "with", "by"} # à enrichir
-    tokens = [t for t in tokens if len(t) > 3 and t not in stopwords]
+    sw = stopwords.words("english")
+    tokens = [t for t in tokens if len(t) > 3 and t not in sw]
     return tokens
 
 

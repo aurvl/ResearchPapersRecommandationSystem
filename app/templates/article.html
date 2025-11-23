@@ -136,7 +136,7 @@
                 
                 <!-- Left Column: Cover Image (35%) -->
                 <div class="w-full md:w-[35%] h-64 md:h-auto relative bg-gray-200 dark:bg-gray-700">
-                    <img src="https://source.unsplash.com/random/800x600/?technology,ai,research" alt="Article Cover" class="w-full h-full object-cover md:rounded-l-xl">
+                    <img src="{{ article.image_url }}" alt="Article Cover" class="w-full h-full object-cover md:rounded-l-xl">
                     <!-- Overlay for text readability on mobile if needed, or just aesthetic -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent md:hidden"></div>
                 </div>
@@ -194,12 +194,19 @@
                 <!-- Card -->
                 <a href="/article/{{ rec.id }}" class="glass-panel rounded-xl overflow-hidden flex flex-col h-80 group hover:scale-[1.02] transition-transform duration-300">
                     <div class="h-1/3 w-full relative overflow-hidden bg-gray-200 dark:bg-gray-700">
-                        <img src="https://source.unsplash.com/random/400x200/?{{ rec.field|default('science') }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <img src="{{ rec.image_url }}" alt="Article Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                     </div>
                     <div class="p-4 flex flex-col flex-grow">
                         <div class="mb-1"><span class="text-[10px] uppercase tracking-wider font-bold text-teal-600 dark:text-teal-400">{{ rec.field }}</span></div>
                         <h3 class="font-bold text-base leading-tight mb-2 text-gray-900 dark:text-white line-clamp-2">{{ rec.title }}</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ rec.author }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            {% set authors_list = rec.author.split(',') %}
+                            {% if authors_list|length > 3 %}
+                                {{ authors_list[:3]|join(',') }} et al.
+                            {% else %}
+                                {{ rec.author }}
+                            {% endif %}
+                        </p>
                         <p class="text-xs text-gray-600 dark:text-gray-300 line-clamp-3 opacity-80">{{ rec.abstract }}</p>
                     </div>
                 </a>
