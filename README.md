@@ -12,11 +12,13 @@
 ├─ .gitignore
 │
 ├─ data/
-│  ├─ articles_sample_200.csv
-│  └─ profile_keywords_template.csv
+│  ├─ cache/                   # cache des articles en tendance
+│  ├─ collect_articles.py      # script de collecte des articles
+│  ├─ articles_sample.csv
+│  └─ profile_keywords.csv
 │
 ├─ models/
-│  └─ tfidf_vectorizer.joblib   # plus tard: vectorizer sauvegarde
+│  └─ tfidf_vectorizer.joblib  # vectorizer sauvegardé
 │
 ├─ src/
 │  ├─ __init__.py
@@ -28,7 +30,7 @@
 │  └─ utils.py                 # fonctions diverses (logging, nettoyage...)
 │
 ├─ app/
-│  ├─ app.py                 # FastAPI app
+│  ├─ api.py                 # FastAPI app
 │  ├─ templates/
 │  │  ├─ img/                # images used in html pages
 │  │  ├─ base.html
@@ -37,12 +39,14 @@
 │  │  └─ article.html        # page 3 : fiche article + similaires
 │  │
 │  └─ static/
+│     ├─ img/                # images used in html pages
 │     ├─ styles.css
 │     ├─ explore.js
-│     └─ article.js
+│     ├─ article.js
+│     └─ search.js
 │
 └─ notebooks/
-   └─ 01_exploration.ipynb     # EDA articles + tests TF-IDF / recos
+   └─ 01_exploration.ipynb     # EDA articles + tests TF-IDF / recom
 ```
 
 ## Requirments and tools

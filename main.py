@@ -1,4 +1,5 @@
 # main.py
+import joblib
 from src.data_loading import load_articles, load_profile_keywords
 from src.text_vectorizer import fit_vectorizer
 from src.profile_builder import build_profile_text, profile_to_vector
@@ -10,9 +11,10 @@ from src.recommender import (
 )
 from src.get_trends import get_hot_terms
 from loguru import logger
+from config import TFIDF_VECTORIZER_PATH
 
 def main():
-    # 1) Charger les dat a
+    # 1) Charger les données
     logger.info("1. Loading data")
     print(">> Loading data...")
     articles_df = load_articles()
@@ -92,6 +94,8 @@ def main():
     print("Similar articles:")
     print(recs_sim[["id", "title", "field", "year"]], "\n")
 
+
+    joblib.dump(vectorizer, TFIDF_VECTORIZER_PATH)
     print("Done.")
 
 
