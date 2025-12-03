@@ -8,3 +8,4 @@ requests
 arxiv
 fastapi
 uvicorn
+nltk
