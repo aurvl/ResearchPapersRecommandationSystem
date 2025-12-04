@@ -6,3 +6,6 @@ joblib
 scipy
 requests
 arxiv
+fastapi
+uvicorn
+nltk
