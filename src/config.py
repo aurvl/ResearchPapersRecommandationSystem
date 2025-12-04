@@ -37,6 +37,7 @@ RANDOM_SEED   = 42
 N_PER_CATEGORY = 750 
 
 OUTPUT_FILE = DATA_DIR / "articles.csv"
+OUTPUT_PARQUET = DATA_DIR / "articles.parquet" # pour format parquet
 
 # Domaines
 CATEGORY_LIST = [

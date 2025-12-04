@@ -3,7 +3,7 @@ import os
 from src.utils import (
     get_concept_id, fetch_papers_by_concept, 
 )
-from src.config import N_PER_CATEGORY, OUTPUT_FILE, CATEGORY_LIST
+from src.config import N_PER_CATEGORY, OUTPUT_FILE, OUTPUT_PARQUET, CATEGORY_LIST
 
 # MAIN
 
@@ -11,7 +11,8 @@ def main():
     all_data = []
     
     # Création dossier si no
-    output_dir = os.path.dirname(OUTPUT_FILE)
+    # output_dir = os.path.dirname(OUTPUT_FILE)  # format csv
+    output_dir = os.path.dirname(OUTPUT_PARQUET) # format parquet
     if output_dir and not os.path.exists(output_dir):
         try:
             os.makedirs(output_dir)
@@ -37,8 +38,10 @@ def main():
         
         # Sauvegarde (tous les 1000 articlesn, on save)
         if len(all_data) % 1000 < len(works):
-             print("   (Saving intermediate backup...)")
-             pd.DataFrame(all_data).to_csv(OUTPUT_FILE, index=False)
+            print("   (Saving intermediate backup...)")
+            df_tmp = pd.DataFrame(all_data)
+            # df_tmp.to_csv(OUTPUT_FILE, index=False) # pour csv
+            df_tmp.to_parquet(OUTPUT_PARQUET, index=False, compression="snappy") # pour parquet
 
     # Final Save
     if all_data:
@@ -47,8 +50,11 @@ def main():
         df = df.drop_duplicates(subset=['id'])
         
         print(f"\nDONE! Total articles: {len(df)}")
-        df.to_csv(OUTPUT_FILE, index=False)
-        print(f"Saved to {OUTPUT_FILE}")
+        # df.to_csv(OUTPUT_FILE, index=False)
+        # print(f"Saved to {OUTPUT_FILE}")
+        
+        df.to_parquet(OUTPUT_PARQUET, index=False, compression="snappy")
+        print(f"Saved Parquet to {OUTPUT_PARQUET}")
     else:
         print("No data collected.")
 
