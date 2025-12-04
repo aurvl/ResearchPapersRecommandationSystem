@@ -2,7 +2,7 @@
 import joblib
 from src.data_loading import load_articles, load_profile_keywords
 from src.text_vectorizer import fit_vectorizer
-from src.profile_builder import build_profile_text, profile_to_vector
+from src.profile_builder import build_profile_text, profile_from_text, profile_to_vector
 from src.recommender import (
     recommend_for_profile,
     recommend_hot_articles,
@@ -11,7 +11,7 @@ from src.recommender import (
 )
 from src.get_trends import get_hot_terms
 from loguru import logger
-from config import TFIDF_VECTORIZER_PATH
+from src.config import TFIDF_VECTORIZER_PATH
 
 def main():
     # 1) Charger les données
@@ -31,27 +31,43 @@ def main():
 
     # 3) Simuler des préférences utilisateur
     #    (à remplacer par ton vrai formulaire plus tard)
-    logger.info("3. Building user profile from simulated preferences")
+    logger.info("3. Building user profile")
     prefs = {
         "field": ["machine_learning", "recommender_systems"],
         "type": ["empirical"],
         "impact": ["high_impact"],
     }
+    
+    print(">> a. Build user profile from user inputs...")
+    user_input = "Attention is all you need"
+    print(f">> Input brut: {user_input}")
+    enriched_text = profile_from_text(user_input, profile_kw_df)
+    print(f">> Texte enrichi: {enriched_text[:200]}...") 
 
-    print(">> Building user profile from prefs:", prefs)
+    print('\n')
+    print(">> b. Building user profile from prefs:", prefs)
     profile_text = build_profile_text(prefs, profile_kw_df)
     print("  - Profile text:\n", profile_text[:300], "...\n")
 
     v_profile = profile_to_vector(profile_text, vectorizer)
+    v_profile_enriched = profile_to_vector(enriched_text, vectorizer)
 
     # 4) Recommandations basées sur le profil
-    logger.info("4. Recommending articles for the user profile")
+    logger.info("4.a. Recommending articles for the user profile")
     print(">> Recommending articles for this profile...")
     recs_profile = recommend_for_profile(
         v_profile, X_tfidf, articles_df, top_k=5
     )
     print("Top-5 for profile:")
     print(recs_profile[["id", "title", "field", "year"]], "\n")
+    
+    logger.info("4.b. Recommending articles for the enriched text profile")
+    print(">> Recommending articles for the enriched text profile...")
+    recs_enriched = recommend_for_profile(
+        v_profile_enriched, X_tfidf, articles_df, top_k=5
+    )
+    print("Top-5 for enriched text profile:")
+    print(recs_enriched[["id", "title", "field", "year"]], "\n")
 
     # 5) Simuler des likes sur 2 premiers articles
     logger.info("5. Updating profile with user likes")

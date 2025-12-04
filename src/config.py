@@ -20,6 +20,9 @@ PROFILE_KEYWORDS_PATH = DATA_DIR / "profile_keywords.csv"
 # Dossier pour les modeles sauvegardes
 MODELS_DIR = PROJECT_ROOT / "models"
 TFIDF_VECTORIZER_PATH = MODELS_DIR / "tfidf_vectorizer.joblib"
+LLM_URL = "sentence-transformers/all-MiniLM-L6-v2"  # modèle de sentence-transformers
+# This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search.
+EMB_PATH = "models/article_embeddings.npy"
 
 # Parametres TF-IDF
 TFIDF_MAX_FEATURES = 500000

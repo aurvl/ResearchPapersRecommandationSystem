@@ -9,3 +9,5 @@ arxiv
 fastapi
 uvicorn
 nltk
+sentence-transformers
+transformers
