@@ -28,6 +28,7 @@ EMB_PATH = "models/article_embeddings.npy"
 TFIDF_MAX_FEATURES = 500000
 TFIDF_NGRAM_RANGE = (1, 2)
 TFIDF_STOP_WORDS = "english"
+TFIDF_NORM = "l2"
 
 # Parametres de recommandation
 TOP_K_MAIN    = 10          # nb d'articles recommandé principalement

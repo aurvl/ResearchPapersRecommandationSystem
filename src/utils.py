@@ -2,6 +2,8 @@ import requests
 import time
 import math
 from datetime import datetime
+import numpy as np
+from scipy.sparse import issparse
 
 # email requested by OpenAlex
 MY_EMAIL = "aurelvvince@gmail.com"
@@ -212,3 +214,47 @@ def fetch_papers_by_concept(concept_id, concept_name, total_limit):
             continue
             
     return collected
+
+
+def print_l2_norm_stats(X, name: str = "X", sample_n: int = 10):
+    """Print L2 norm stats (min/max/mean) for a sparse matrix/vector.
+
+    Designed for TF-IDF sanity checks without densifying.
+    - For 2D matrices: computes row-wise L2 norms.
+    - For 1D vectors: treats as a single row.
+    """
+    if X is None:
+        print(f"[norms] {name}: None")
+        return
+
+    if issparse(X):
+        n_rows = X.shape[0]
+        if n_rows == 0:
+            print(f"[norms] {name}: empty")
+            return
+        k = max(1, min(int(sample_n), n_rows))
+        Xs = X[:k]
+        norms_sq = Xs.multiply(Xs).sum(axis=1)
+        norms = np.sqrt(np.asarray(norms_sq).ravel())
+    else:
+        X_arr = np.asarray(X)
+        if X_arr.ndim == 1:
+            X_arr = X_arr.reshape(1, -1)
+        n_rows = X_arr.shape[0]
+        if n_rows == 0:
+            print(f"[norms] {name}: empty")
+            return
+        k = max(1, min(int(sample_n), n_rows))
+        Xs = X_arr[:k]
+        norms = np.linalg.norm(Xs, axis=1)
+
+    finite = norms[np.isfinite(norms)]
+    if finite.size == 0:
+        print(f"[norms] {name}: no finite norms")
+        return
+
+    zero_count = int(np.sum(finite == 0.0))
+    print(
+        f"[norms] {name}: rows_sampled={int(len(norms))} "
+        f"min={finite.min():.6f} max={finite.max():.6f} mean={finite.mean():.6f} zeros={zero_count}"
+    )

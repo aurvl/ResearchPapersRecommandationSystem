@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.sparse import csr_matrix, issparse
+from sklearn.preprocessing import normalize
 from sklearn.metrics.pairwise import linear_kernel
 from src.config import TOP_K_MAIN, TOP_K_SIMILAR, PROFILE_ALPHA
 from src.get_trends import get_hot_terms
@@ -7,6 +8,17 @@ from src.get_trends import get_hot_terms
 def recommend_for_profile(v_profile, X_tfidf, articles_df, top_k=TOP_K_MAIN, exclude_ids=None):
     if exclude_ids is None:
         exclude_ids = set()
+    # Enforce L2-normlz pour que dot product=cosine sim
+    if not issparse(v_profile):
+        v_profile = csr_matrix(v_profile)
+    v_profile = normalize(v_profile, norm="l2", axis=1, copy=False)
+
+    # pre/post feedback maj debug
+    import os
+    if os.getenv("DEBUG_L2_NORMS") == "1":
+        from src.utils import print_l2_norm_stats
+        print_l2_norm_stats(v_profile, name="v_profile", sample_n=1)
+
     sims = linear_kernel(v_profile, X_tfidf).ravel()
     # on exclut certains articles si besoin
     mask = ~articles_df["id"].isin(exclude_ids)
@@ -43,6 +55,16 @@ def update_profile_with_likes(v_profile, liked_ids, X_tfidf, articles_df, alpha=
         v_profile = csr_matrix(v_profile)
     
     v_new = alpha * v_profile + (1 - alpha) * liked_centroid
+    # Renormalisation
+    v_new = normalize(v_new, norm="l2", axis=1, copy=False)
+
+    # debug: print norms pre/post feedback maj.
+    import os
+    if os.getenv("DEBUG_L2_NORMS") == "1":
+        from src.utils import print_l2_norm_stats
+        print_l2_norm_stats(v_profile, name="v_profile_before_feedback", sample_n=1)
+        print_l2_norm_stats(v_new, name="v_profile_after_feedback", sample_n=1)
+
     return v_new
 
 def recommend_similar_to_article(article_id, X_tfidf, articles_df, top_k=TOP_K_SIMILAR):
@@ -51,6 +73,13 @@ def recommend_similar_to_article(article_id, X_tfidf, articles_df, top_k=TOP_K_S
         raise ValueError("article_id inconnu")
     idx = np.where(mask.values)[0][0]
     vec = X_tfidf[idx]
+
+    import os
+    if os.getenv("DEBUG_L2_NORMS") == "1":
+        from src.utils import print_l2_norm_stats
+        print_l2_norm_stats(X_tfidf, name="X_tfidf_sample", sample_n=min(25, X_tfidf.shape[0]))
+        print_l2_norm_stats(vec, name="query_vec_from_catalog", sample_n=1)
+
     sims = linear_kernel(vec, X_tfidf).ravel()
     sims[idx] = -1  # on exclut l'article lui-meme
     idx_sorted = sims.argsort()[::-1][:top_k]
