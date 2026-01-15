@@ -1,0 +1,96 @@
+dimension,option,keywords
+field,machine_learning,machine learning supervised learning unsupervised learning classification regression clustering data mining
+field,deep_learning,deep learning neural networks convolutional networks recurrent networks transformers representation learning
+field,econometrics,econometrics regression panel data instrumental variables causal inference time series ardl vecm gmm
+field,finance,financial markets asset pricing portfolio optimization volatility risk management derivatives options stocks bonds
+field,environmental_economics,environmental economics climate change carbon emissions blue carbon fisheries pollution sustainability ecosystem services
+field,recommender_systems,recommender systems collaborative filtering content based recommendation ranking user preference personalization
+field,nlp,natural language processing text mining language models word embeddings transformers sentiment analysis
+field,time_series,time series forecasting autoregressive models arima vector autoregression volatility modeling seasonality trends
+method,bayesian,bayesian inference posterior distribution prior distribution probabilistic modeling markov chain monte carlo
+method,frequentist,maximum likelihood estimation hypothesis testing confidence intervals regression models
+method,causal_inference,causal inference treatment effect counterfactual difference in differences propensity score matching
+method,deep_models,deep neural network convolution recurrent attention transformer end to end learning
+type,theoretical,theoretical analysis mathematical formulation proofs convergence properties asymptotic results
+type,empirical,empirical study real world data estimation experimental evaluation numerical results
+type,survey,survey review related work literature overview taxonomy comprehensive summary
+impact,high_impact,policy implications significant impact real world decision making large scale applications
+impact,applied_industry,industrial application business case study real world deployment production system operational constraints
+impact,academic_focus,academic contribution methodological innovation benchmark dataset theoretical originality
+field,computer_vision,computer vision image processing object detection segmentation image classification visual recognition video analysis
+field,robotics,robotics autonomous systems kinematics dynamics control theory path planning manipulation
+field,cybersecurity,cybersecurity network security cryptography malware analysis intrusion detection privacy protection authentication
+field,software_engineering,software engineering software architecture testing verification requirements engineering agile development devops
+field,distributed_systems,distributed systems cloud computing edge computing consensus algorithms fault tolerance parallel processing
+field,statistics,statistical theory probability stochastic processes multivariate analysis design of experiments sampling methods
+field,mathematics,pure mathematics algebra geometry topology calculus differential equations number theory logic
+field,theoretical_physics,theoretical physics quantum mechanics relativity string theory particle physics cosmology mathematical physics
+field,condensed_matter,condensed matter physics superconductivity nanomaterials semiconductors quantum hall effect material properties
+field,astrophysics,astrophysics astronomy galaxy formation stellar evolution dark matter exoplanets gravitational waves
+field,chemistry,chemistry organic synthesis inorganic chemistry physical chemistry molecular structure chemical reactions catalysis
+field,materials_science,materials science crystallography polymers ceramics metallurgy composites biomaterials
+field,molecular_biology,molecular biology genetics dna sequencing gene expression crispr rna biology molecular cloning
+field,neuroscience,neuroscience brain function neural circuits synaptic plasticity cognitive neuroscience neuroimaging electrophysiology
+field,medicine,clinical medicine medical research disease mechanisms treatment efficacy randomized trials pathology diagnosis
+field,public_health,public health epidemiology biostatistics global health health policy disease prevention environmental health
+field,psychology,psychology cognitive processes behavior analysis social psychology developmental psychology personality theory clinical psychology
+field,sociology,sociology social structure social stratification demography social movements qualitative research social theory
+field,political_science,political science international relations comparative politics public administration political theory voting behavior
+field,microeconomics,microeconomics game theory industrial organization market structure consumer behavior mechanism design
+field,macroeconomics,macroeconomics economic growth monetary policy fiscal policy business cycles general equilibrium inflation
+field,development_economics,development economics poverty alleviation randomized evaluations economic aid human capital microfinance
+field,environmental_science,environmental science ecology biodiversity conservation ecosystem dynamics biogeochemistry environmental monitoring
+field,geology,geology earth science plate tectonics sedimentology petrology geophysics volcanology seismology
+field,climate_science,climate science atmospheric physics climate modeling global warming meteorology carbon cycle paleoclimatology
+field,oceanography,oceanography marine biology physical oceanography chemical oceanography marine ecosystems coastal processes
+field,electrical_engineering,electrical engineering signal processing circuits telecommunications power systems control systems electronics
+field,mechanical_engineering,mechanical engineering fluid dynamics thermodynamics mechanics of materials heat transfer manufacturing processes
+field,civil_engineering,civil engineering structural analysis geotechnics transportation engineering hydrology construction materials
+field,aerospace_engineering,aerospace engineering aerodynamics flight dynamics propulsion systems avionics space exploration
+field,operations_research,operations research linear programming combinatorial optimization supply chain management logistics queueing theory
+field,agriculture,agriculture agronomy crop science soil health plant breeding pest management sustainable farming
+field,education_sciences,education sciences pedagogy curriculum design learning analytics educational technology student assessment instructional design
+field,law,law legal studies jurisprudence constitutional law international law intellectual property criminal justice
+field,urban_studies,urban studies urban planning smart cities transportation planning housing policy urban geography
+field,energy_systems,energy systems renewable energy power grid energy storage photovoltaics wind energy energy policy
+method,reinforcement_learning,reinforcement learning markov decision processes q learning policy gradients actor critic multi agent systems
+method,graph_neural_networks,graph neural networks graph convolutional networks message passing node embedding link prediction graph classification
+method,evolutionary_computation,evolutionary algorithms genetic algorithms genetic programming particle swarm optimization bio inspired computing
+method,structural_equation_modeling,structural equation modeling path analysis confirmatory factor analysis latent variable modeling sem
+method,spatial_statistics,spatial statistics kriging spatial autocorrelation geostatistics point pattern analysis spatial regression
+method,survival_analysis,survival analysis cox proportional hazards kaplan meier time to event censoring hazard function
+method,qualitative_methods,qualitative research interviews focus groups thematic analysis ethnography grounded theory discourse analysis
+method,mixed_methods,mixed methods triangulation quantitative and qualitative integration sequential design concurrent design
+method,meta_analysis,meta analysis systematic review effect size forest plot heterogeneity publication bias
+method,ab_testing,ab testing randomized controlled trials online experiments split testing statistical significance conversion rate optimization
+method,simulation,simulation numerical modeling monte carlo simulation discrete event simulation computer experiment sensitivity analysis
+method,agent_based_modeling,agent based modeling complex adaptive systems emergent behavior individual based modeling interaction rules
+method,network_analysis,network analysis social network analysis graph theory centrality measures community detection network topology
+type,case_study,case study specific instance detailed examination contextual analysis real life example illustrative case
+type,methodological_paper,methodological paper new method proposed algorithm technique development framework proposal protocol description
+type,replication_study,replication study reproducibility check validity testing re analysis confirmatory research independent verification
+type,benchmark_study,benchmark study performance comparison standard evaluation metrics comparison state of the art assessment
+type,short_communication,short communication brief report preliminary results rapid publication concise findings novel observation
+type,position_paper,position paper opinion piece perspective argument future directions visionary proposal policy recommendation
+type,dataset_paper,dataset paper data release annotated corpus benchmark dataset data collection methodology public repository
+type,software_paper,software paper tool description open source library implementation details code release system architecture
+impact,policy_oriented,policy oriented regulation advisory public policy recommendations legislative impact government decision making
+impact,clinical_relevance,clinical relevance patient care medical practice therapeutic potential diagnostic utility healthcare improvement
+impact,societal_impact,societal impact social change quality of life public welfare ethical considerations community benefit
+impact,interdisciplinary_impact,interdisciplinary impact cross disciplinary bridge field integration diverse audience broad relevance
+impact,education_impact,education impact pedagogical value teaching tool student learning curriculum improvement educational resource
+impact,open_source_community,open source community code sharing collaborative development reproduceability tool availability community building
+data_type,panel_data,panel data longitudinal data cross sectional time series repeated measures fixed effects random effects
+data_type,cross_sectional_data,cross sectional data snapshot survey data individual observations single time point population sample
+data_type,time_series_data,time series data temporal data historical data sequential observations trends seasonality
+data_type,image_data,image data computer vision dataset pixels visual information rgb channels raster graphics
+data_type,text_data,text data natural language corpus unstructured text documents linguistic data words tokens
+data_type,network_data,network data graph data adjacency matrix edge list nodes and links relational data
+data_type,spatial_data,spatial data geospatial information gis coordinates maps raster vector data location based
+data_type,genomic_data,genomic data dna sequences gene expression profiles snp data bioinformatics datasets omics data
+data_type,clinical_data,clinical data electronic health records patient records medical history diagnostic results treatment outcomes
+application,healthcare,healthcare medical application hospital management patient monitoring health informatics telemedicine
+application,transportation,transportation traffic management logistics autonomous vehicles public transit mobility smart transport
+application,smart_city,smart city urban infrastructure iot sensors sustainable living citizen services urban management
+application,industry_4_0,industry 4.0 smart manufacturing industrial iot automation predictive maintenance cyber physical systems
+application,social_media,social media online networks user behavior content moderation virality analysis digital communication

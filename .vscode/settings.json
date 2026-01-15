@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.indexing": true,
+    "python.languageServer": "Pylance"
+}
