@@ -2,5 +2,6 @@ trash/
 pyrightconfig.json
 __pycache__/
 *.pyc
-.vscode/
+vscode/
 myv/
+notebooks/.ipynb_checkpoints/
