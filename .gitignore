@@ -2,3 +2,5 @@ trash/
 pyrightconfig.json
 __pycache__/
 *.pyc
+.vscode/
+myv/

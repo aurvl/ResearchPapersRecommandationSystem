@@ -11,3 +11,4 @@ uvicorn
 nltk
 sentence-transformers
 transformers
+matplotlib
