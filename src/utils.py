@@ -258,3 +258,29 @@ def print_l2_norm_stats(X, name: str = "X", sample_n: int = 10):
         f"[norms] {name}: rows_sampled={int(len(norms))} "
         f"min={finite.min():.6f} max={finite.max():.6f} mean={finite.mean():.6f} zeros={zero_count}"
     )
+
+def safe_minmax_norm(x: np.ndarray) -> np.ndarray:
+    x = np.asarray(x, dtype=float)
+    mn, mx = np.nanmin(x), np.nanmax(x)
+    if not np.isfinite(mn) or not np.isfinite(mx) or mx == mn:
+        return np.zeros_like(x, dtype=float)
+    return (x - mn) / (mx - mn)
+
+def mean_topk(scores_2d: np.ndarray, k: int = 3) -> np.ndarray:
+    if scores_2d.size == 0:
+        return np.zeros((scores_2d.shape[0],), dtype=float)
+    k = max(1, min(k, scores_2d.shape[1]))
+    part = np.partition(scores_2d, -k, axis=1)[:, -k:]
+    return part.mean(axis=1)
+
+def topk_indices(scores: np.ndarray, k: int, exclude_mask: np.ndarray | None = None) -> np.ndarray:
+    """Retourne indices top-k (desc). Optionnel: mask a exclure (True = exclu)."""
+    s = np.asarray(scores, dtype=float)
+    if exclude_mask is not None:
+        s = s.copy()
+        s[exclude_mask] = -np.inf
+
+    k = max(1, min(int(k), s.size))
+    idx = np.argpartition(s, -k)[-k:]
+    idx = idx[np.argsort(s[idx])[::-1]]
+    return idx

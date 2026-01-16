@@ -8,21 +8,25 @@ ARXIV_API_URL = "https://export.arxiv.org/api/query"
 
 # Dossiers de donnees
 DATA_DIR = PROJECT_ROOT / "data"
-
 # Cache
 DATA_CACHE_DIR = DATA_DIR / "cache"
+HOT_TERMS_CACHE_PATH = DATA_CACHE_DIR / "hot_terms.joblib"
+HOT_TFIDF_TRENDS_CACHE_PATH = DATA_CACHE_DIR / "hot_tfidf_trends.joblib"
 
-# Fichiers de donnees
+# Fichiers data
 ARTICLES_PATH = DATA_DIR / "articles_sample.csv" # for tests (test avec petit dataset - partition du big df)
 # ARTICLES_PATH = DATA_DIR / "articles.csv"
 PROFILE_KEYWORDS_PATH = DATA_DIR / "profile_keywords.csv"
 
-# Dossier pour les modeles sauvegardes
+# Dossier pour les model saved
 MODELS_DIR = PROJECT_ROOT / "models"
 TFIDF_VECTORIZER_PATH = MODELS_DIR / "tfidf_vectorizer.joblib"
-LLM_URL = "sentence-transformers/all-MiniLM-L6-v2"  # modèle de sentence-transformers
+X_TFIDF_PATH = MODELS_DIR / "X_tfidf.joblib"
+
+LLM_URL = "sentence-transformers/all-MiniLM-L6-v2"
 # This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search.
-EMB_PATH = "models/article_embeddings.npy"
+EMBED_CORPUS = MODELS_DIR / "article_embeddings_minilm.joblib"
+# PROFILE_EMBED_CACHE_PATH = MODELS_DIR / "profile_embeddings_minilm.joblib"
 
 # Parametres TF-IDF
 TFIDF_MAX_FEATURES = 500000
@@ -35,6 +39,7 @@ TOP_K_MAIN    = 10          # nb d'articles recommandé principalement
 TOP_K_SIMILAR = 10          # nb d'articles similaires à proposer
 PROFILE_ALPHA = 0.6         # 60% profil initial + 40% likes
 RANDOM_SEED   = 42
+HOT_TERMS_NUMB = 100
 
 # Parametres de collecte OpenAlex
 # Cible totale par catégorie

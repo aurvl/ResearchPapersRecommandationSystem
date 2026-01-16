@@ -1,13 +1,14 @@
+import os
+import joblib
+from functools import lru_cache
 from sklearn.feature_extraction.text import TfidfVectorizer
-# from sentence_transformers import SentenceTransformer
-import numpy as np
 from src.config import (
-    EMB_PATH,
     TFIDF_MAX_FEATURES,
     TFIDF_NGRAM_RANGE,
     TFIDF_STOP_WORDS,
     TFIDF_NORM,
-    LLM_URL,
+    TFIDF_VECTORIZER_PATH,
+    X_TFIDF_PATH,
 )
 
 def fit_vectorizer(corpus):
@@ -20,19 +21,13 @@ def fit_vectorizer(corpus):
     X = vectorizer.fit_transform(corpus)
     return vectorizer, X
 
-# def compute_embeddings(texts):
-#     print("Loading sentence-transformer model...")
-#     model = SentenceTransformer(LLM_URL)
+def save_tfidf_elements(vectorizer, X):
+    os.makedirs(os.path.dirname(str(TFIDF_VECTORIZER_PATH)), exist_ok=True)
+    joblib.dump(vectorizer, TFIDF_VECTORIZER_PATH)
+    joblib.dump(X, X_TFIDF_PATH)
 
-#     print("Encoding articles...")
-#     embeddings = model.encode(
-#         texts,
-#         batch_size=64,
-#         show_progress_bar=True,
-#         convert_to_numpy=True,
-#         normalize_embeddings=True,  # => dot = cosine
-#     )
-#     import os
-#     os.makedirs(os.path.dirname(EMB_PATH), exist_ok=True)
-#     np.save(EMB_PATH, embeddings)
-#     return embeddings
+@lru_cache(maxsize=1)
+def load_tfidf_elements():
+    vectorizer = joblib.load(TFIDF_VECTORIZER_PATH)
+    X = joblib.load(X_TFIDF_PATH)
+    return vectorizer, X
