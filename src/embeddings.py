@@ -18,7 +18,13 @@ def get_embedding_model(model_name: str = LLM_URL):
     """
     return SentenceTransformer(model_name)
 
-def encode_texts(texts: list[str], model, batch_size=64, normalize=True):
+def encode_texts(
+    texts: list[str],
+    model,
+    batch_size: int = 64,
+    normalize: bool = True,
+    show_progress_bar: bool = False,
+):
     """
     Encode a list of texts into embeddings.
 
@@ -34,11 +40,12 @@ def encode_texts(texts: list[str], model, batch_size=64, normalize=True):
     embeddings = model.encode(
         texts,
         batch_size=batch_size,
-        show_progress_bar=True,
+        show_progress_bar=show_progress_bar,
         convert_to_numpy=True
     )
     if normalize:
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+        norms = np.maximum(norms, 1e-12)
         embeddings = embeddings / norms
     return embeddings.astype(np.float32)
 
@@ -73,7 +80,12 @@ def get_or_compute_article_embeddings(
 
     print("Cache not found or incompatible. Computing embeddings...")
     model = get_embedding_model()
-    embeddings = encode_texts(articles_df[text_col].tolist(), model)
+    embeddings = encode_texts(
+        articles_df[text_col].tolist(),
+        model,
+        normalize=True,
+        show_progress_bar=True,
+    )
 
     # Save to cache
     joblib.dump({"embeddings": embeddings, "ids": articles_df["id"].tolist()}, cache_path)
