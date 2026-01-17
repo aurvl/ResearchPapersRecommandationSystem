@@ -28,9 +28,9 @@ def main():
     logger.info("II. TF-IDF vectorization")
     logger.info("1. Fitting TF-IDF vectorizer")
     print(">> Fitting TF-IDF vectorizer...")
-    # vectorizer, X_tfidf = fit_vectorizer(articles_df["text"]) # fitting
-    vectorizer, X_tfidf = load_tfidf_elements() # loading cached
-    print(f"  - Vectorizer loaded from {TFIDF_VECTORIZER_PATH}")
+    vectorizer, X_tfidf = fit_vectorizer(articles_df["text"]) # fitting
+    # vectorizer, X_tfidf = load_tfidf_elements() # loading cached
+    # print(f"  - Vectorizer loaded from {TFIDF_VECTORIZER_PATH}")
     print(f"  - Matrix shape: {X_tfidf.shape}\n")
 
     # 1) Simuler des préférences utilisateur
