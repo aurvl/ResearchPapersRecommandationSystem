@@ -14,8 +14,14 @@ HOT_TERMS_CACHE_PATH = DATA_CACHE_DIR / "hot_terms.joblib"
 HOT_TFIDF_TRENDS_CACHE_PATH = DATA_CACHE_DIR / "hot_tfidf_trends.joblib"
 
 # Fichiers data
-ARTICLES_PATH = DATA_DIR / "articles_sample.csv" # for tests (test avec petit dataset - partition du big df)
-# ARTICLES_PATH = DATA_DIR / "articles.csv"
+# csv test version (pour tests rapides)
+# ARTICLES_PATH = DATA_DIR / "articles_sample.csv" # sample article. Also available at "https://drive.google.com/file/d/1TxavkU6vWwnBihadNm9VrX35AOXB9L5L/view?usp=drive_link"
+# csv version (for high RAM)
+# ARTICLES_PATH = "https://drive.google.com/file/d/16oenFPfHUFwZUVTACEy4x9SoMxtxOvQt/view?usp=drive_link" # if high RAM
+# ARTICLES_PATH = DATA_DIR / "articles.csv" # local csv version
+# parquet version (for low RAM)
+ARTICLES_PATH = "https://drive.google.com/file/d/11xJATcNfJCLC95B8nan-0EgnoYhv2bSo/view?usp=drive_link" # if low RAM
+# ARTICLES_PATH = DATA_DIR / "articles.parquet" # local parquet version
 PROFILE_KEYWORDS_PATH = DATA_DIR / "profile_keywords.csv"
 
 # Dossier pour les model saved
@@ -43,7 +49,7 @@ HOT_TERMS_NUMB = 100
 
 # Parametres de collecte OpenAlex
 # Cible totale par catégorie
-N_PER_CATEGORY = 750 
+N_PER_CATEGORY = 1000 
 
 OUTPUT_FILE = DATA_DIR / "articles.csv"
 OUTPUT_PARQUET = DATA_DIR / "articles.parquet" # pour format parquet

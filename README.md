@@ -16,20 +16,36 @@ Le code du dépôt implémente notamment :
 
 ## Quickstart
 
-Prérequis : Python 3.10+ (recommandé : 3.11).
+Prérequis :
+
+- Git (pour cloner le dépôt)
+- Python 3.10+ (recommandé : 3.11)
 
 ```bash
 # 1) Créer et activer un environnement virtuel
 python -m venv .venv
 
+# 1bis) Activer le venv (selon ton shell)
+
 # Windows (PowerShell)
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
+
+# Windows (Git Bash)
+source .venv/Scripts/activate
+
+# Linux
+source .venv/bin/activate
+
+# macOS
+source .venv/bin/activate
 
 # 2) Installer les dépendances
 pip install -r requirements.txt
 
 # 3a) Lancer la démonstration CLI
-python main.py
+Exécuter les notebooks pour une exploration plus approfondie :
+- `notebooks/01_exploration.ipynb` : exploration du dataset et du système (TF‑IDF + embeddings)
+- `notebooks/02_analyse.ipynb` : analyse des recommandations (TF‑IDF vs embeddings)
 
 # 3b) Lancer l’application Web (FastAPI)
 python -m uvicorn app.api:app --host 127.0.0.1 --port 8000
@@ -48,31 +64,36 @@ Puis ouvrir : http://127.0.0.1:8000
 │
 ├─ data/                      # Données et caches de tendance
 │  ├─ articles_sample.csv     # Exemple de catalogue (CSV)
-│  ├─ profile_keywords.csv    # Mots-clés de profil (mapping option → keywords)
+│  ├─ collect_articles.py     # Script de collecte (OpenAlex) → parquet local
 │  ├─ payload.json            # Exemple d’article externe (JSON)
+│  ├─ profile_keywords.csv    # Mots-clés de profil (mapping option → keywords)
 │  └─ cache/                  # Caches arXiv/trends (json + joblib)
 │
 ├─ models/                    # Caches de modèles / représentations
-│  ├─ article_embeddings_minilm.joblib
 │  ├─ tfidf_vectorizer.joblib
-│  └─ X_tfidf.joblib
-│
-├─ src/                       # Pipeline (chargement, embeddings, reco, trends)
-│  ├─ config.py
-│  ├─ data_loading.py
-│  ├─ embeddings.py
-│  ├─ get_trends.py
-│  ├─ profile_builder.py
-│  ├─ recommender.py
-│  ├─ text_vectorizer.py
-│  └─ utils.py
+│  ├─ X_tfidf.joblib
+│  ├─ svd_model.joblib
+│  ├─ Z_100.npy
+│  ├─ article_embeddings_minilm.joblib
+│  ├─ pca_minilm.joblib
+│  └─ Z_minilm.npy
 │
 ├─ notebooks/                 # Analyses exploratoires
+│  ├─ 01_exploration.ipynb    # Exploration du dataset et du système (TF‑IDF + embeddings)
+│  └─ 02_analyse.ipynb        # Analyse des recommandations (TF‑IDF vs embeddings)
+├─ src/                       # Pipeline (chargement, embeddings, reco, trends)
 ├─ main.py                    # Script de démonstration (TF‑IDF + embeddings)
 └─ requirements.txt
 ```
 
 ## Installation
+
+### Cloner le dépôt
+
+```bash
+git clone https://github.com/aurvl/ResearchPapersRecommandationSystem.git
+cd ResearchPapersRecommandationSystem
+```
 
 ### Versions
 
@@ -89,13 +110,25 @@ Activation :
 - PowerShell :
 
 ```powershell
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
+```
+
+- Windows (Git Bash) :
+
+```bash
+source .venv/Scripts/activate
 ```
 
 - cmd.exe :
 
 ```bat
 .venv\Scripts\activate.bat
+```
+
+- Linux / macOS :
+
+```bash
+source .venv/bin/activate
 ```
 
 Installation des dépendances :
@@ -124,6 +157,48 @@ Le code supporte une variable de debug :
 - `DEBUG_L2_NORMS=1` : affiche des statistiques de normes L2 (utile pour diagnostiquer normalisation et shapes).
 
 ## Données
+
+Tu as 2 options : utiliser le dataset fourni (recommandé pour reproduire la même expérience), ou collecter le tien.
+
+### Option A — Réutiliser nos données (Google Drive)
+
+Les fichiers de données sont disponibles ici :
+
+- https://drive.google.com/drive/folders/1xj1iG3RwSf0PYftbxBOb-UBFU2svqOms
+
+Deux façons de faire :
+
+1) Télécharger puis copier dans `data/`
+   - Télécharge le fichier du catalogue (idéalement `articles.parquet`) et colle-le dans `data/` (ex: `data/articles.parquet`).
+
+2) Utiliser les URLs Drive via la config
+   - Dans `src/config.py`, tu peux décommenter les lignes `ARTICLES_PATH = "https://drive.google.com/file/d/..."` (CSV ou parquet) selon ton besoin.
+   - Recommandation : pour éviter les limitations Drive (confirm download / gros fichiers), le plus fiable reste de télécharger puis mettre le fichier localement dans `data/`.
+
+### Option B — Collecter ton propre dataset (OpenAlex)
+
+Si tu veux reconstruire un corpus à toi :
+
+```bash
+python data/collect_articles.py
+```
+
+Le script construit un dataset (2010–2025) à partir d’OpenAlex, déduplique par `id`, puis sauvegarde un parquet local (par défaut `data/articles.parquet`).
+
+Ensuite, assure-toi que `ARTICLES_PATH` dans `src/config.py` pointe bien vers ton fichier local.
+
+## Reproduire l’expérience sans ré-entraîner (TF‑IDF / SVD / PCA / embeddings)
+
+Si tu veux **charger les éléments déjà calculés** (au lieu de refit TF‑IDF / recalculer embeddings / refaire SVD/PCA), télécharge `models.zip` depuis le même Google Drive :
+
+- https://drive.google.com/drive/folders/1xj1iG3RwSf0PYftbxBOb-UBFU2svqOms
+
+Puis :
+
+1) Dézippe `models.zip`
+2) Copie le contenu extrait dans le dossier `models/` du projet
+
+Tu dois obtenir des fichiers du style : `tfidf_vectorizer.joblib`, `X_tfidf.joblib`, `svd_model.joblib`, `Z_100.npy`, `article_embeddings_minilm.joblib`, `pca_minilm.joblib`, `Z_minilm.npy`.
 
 ### Format attendu du CSV
 

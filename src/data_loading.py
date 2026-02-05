@@ -1,12 +1,51 @@
 import pandas as pd
+import re
 import json
+from pathlib import Path
 from typing import Mapping, Any
-from src.config import ARTICLES_PATH, PROFILE_KEYWORDS_PATH
+import src.config as cfg
+
+
+def _to_direct_gdrive_url(url: str) -> str:
+    # Supports:
+    # - https://drive.google.com/file/d/<ID>/view?...
+    # - https://drive.google.com/open?id=<ID>
+    # - https://drive.google.com/uc?id=<ID>&...
+    m = re.search(r"/file/d/([^/]+)", url)
+    if not m:
+        m = re.search(r"[?&]id=([^&]+)", url)
+    if not m:
+        return url
+    file_id = m.group(1)
+    return f"https://drive.google.com/uc?export=download&id={file_id}"
 
 def load_articles(path=None):
     if path is None:
-        path = ARTICLES_PATH
-    df = pd.read_csv(path, low_memory=False)
+        path = cfg.ARTICLES_PATH
+
+    # Construction du lien de download direct (if lien gdrive)
+    if isinstance(path, str) and path.lower().startswith(("http://", "https://", "http:\\", "https:\\")):
+        url = path.replace("\\", "/")
+        url = _to_direct_gdrive_url(url)
+
+        try:
+            df = pd.read_csv(url, low_memory=False)
+        except Exception:
+            try:
+                df = pd.read_parquet(url)
+            except Exception as e:
+                raise ValueError(f"Impossible de charger le fichier à partir de l'URL: {url}. Erreur: {e}")
+    else:
+        path = Path(path)
+        suffix = path.suffix.lower()
+
+        if suffix == ".csv":
+            df = pd.read_csv(path, low_memory=False)
+        elif suffix in (".parquet", ".pq"):
+            df = pd.read_parquet(path)
+        else:
+            raise ValueError(f"Format non supporté: {suffix} (attendu: .csv ou .parquet)")
+
     df = df.dropna(subset=["title", "abstract", "field"]).reset_index(drop=True)
     df["text"] = (
         df[["title", "abstract", "field"]]
@@ -18,7 +57,7 @@ def load_articles(path=None):
 
 def load_profile_keywords(path=None):
     if path is None:
-        path = PROFILE_KEYWORDS_PATH
+        path = cfg.PROFILE_KEYWORDS_PATH
     return pd.read_csv(path)
 
 def load_json(path):

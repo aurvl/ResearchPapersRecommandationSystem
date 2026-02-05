@@ -4,6 +4,9 @@ import math
 from datetime import datetime
 import numpy as np
 from scipy.sparse import issparse
+import matplotlib.pyplot as plt
+import scipy.sparse as sp
+from sklearn.preprocessing import normalize
 
 # email requested by OpenAlex
 MY_EMAIL = "aurelvvince@gmail.com"
@@ -284,3 +287,311 @@ def topk_indices(scores: np.ndarray, k: int, exclude_mask: np.ndarray | None = N
     idx = np.argpartition(s, -k)[-k:]
     idx = idx[np.argsort(s[idx])[::-1]]
     return idx
+
+
+def _is_sparse_mode(X, mode=None):
+    if mode is None:
+        return sp.issparse(X)
+    mode = str(mode).lower().strip()
+    if mode not in {"sparse", "dense"}:
+        raise ValueError('mode must be "sparse" or "dense" (or None)')
+    return mode == "sparse"
+
+
+def _prep_X(X, *, is_sparse: bool, preproc=None):
+    """Prepare X for reducer.transform with consistent preprocessing."""
+    if is_sparse:
+        if not sp.issparse(X):
+            raise TypeError("Expected a sparse matrix for mode='sparse'")
+        Xp = X.tocsr().astype(np.float32)
+        Xp = normalize(Xp, norm="l2", axis=1, copy=False)
+        return Xp
+    else:
+        Xp = np.asarray(X, dtype=np.float32)
+        if Xp.ndim == 1:
+            Xp = Xp.reshape(1, -1)
+        if preproc is not None:
+            Xp = preproc.transform(Xp)
+        return Xp
+
+
+def _prep_v(v, *, is_sparse: bool, preproc=None):
+    """Prepare a single vector (profile) for reducer.transform."""
+    if v is None:
+        return None
+    if is_sparse:
+        if sp.issparse(v):
+            vr = v.tocsr()
+            if vr.shape[0] != 1:
+                vr = vr.reshape(1, -1)
+        else:
+            arr = np.asarray(v)
+            if arr.ndim == 1:
+                arr = arr.reshape(1, -1)
+            vr = sp.csr_matrix(arr)
+        vr = vr.astype(np.float32)
+        vr = normalize(vr, norm="l2", axis=1, copy=False)
+        return vr
+    else:
+        vr = np.asarray(v, dtype=np.float32)
+        if vr.ndim == 1:
+            vr = vr.reshape(1, -1)
+        if preproc is not None:
+            vr = preproc.transform(vr)
+        return vr
+
+
+def plot_article_space(
+    X, reducer, recs_df, *,
+    v_profile=None,
+    pc_x=1, pc_y=2,
+    sample_bg=8000,
+    annotate_top=False,
+    random_state=42,
+    mode=None,
+    preproc=None,
+    title=""
+ ):
+    """
+    Plot recommendations and (optionally) a user profile in the 2D space of a reducer.
+
+    Parameters
+    ----------
+    X : (n, d) matrix
+        Feature matrix for all articles (TF-IDF sparse matrix or dense embeddings).
+    reducer : fitted sklearn-like transformer
+        Must implement .transform(X). Examples: TruncatedSVD for TF-IDF, PCA for embeddings.
+    recs_df : pandas.DataFrame
+        Subset of articles_df (recommendations). Its index must match row indices in X.
+    v_profile : vector-like, optional
+        Profile vector in the same feature space as X (sparse row for TF-IDF, dense for embeddings).
+    mode : {'sparse','dense'} or None
+        If None, inferred from X being scipy sparse or not.
+    preproc : transformer, optional
+        Dense preprocessing before reducer (ex: StandardScaler for PCA embeddings).
+    """
+    is_sparse = _is_sparse_mode(X, mode=mode)
+    rng = np.random.default_rng(random_state)
+
+    n = X.shape[0]
+    if sample_bg is not None and sample_bg < n:
+        bg_idx = rng.choice(n, size=int(sample_bg), replace=False)
+        X_bg = X[bg_idx]
+    else:
+        X_bg = X
+
+    X_bg_p = _prep_X(X_bg, is_sparse=is_sparse, preproc=preproc)
+    Z_bg = reducer.transform(X_bg_p)
+
+    rec_idx = recs_df.index.to_numpy()
+    X_recs = X[rec_idx]
+    X_recs_p = _prep_X(X_recs, is_sparse=is_sparse, preproc=preproc)
+    Z_recs = reducer.transform(X_recs_p)
+
+    Z_prof = None
+    v_prof_p = _prep_v(v_profile, is_sparse=is_sparse, preproc=preproc)
+    if v_prof_p is not None:
+        Z_prof = reducer.transform(v_prof_p)
+
+    ix = int(pc_x) - 1
+    iy = int(pc_y) - 1
+    if ix < 0 or iy < 0:
+        raise ValueError("pc_x and pc_y are 1-indexed (PC1=1)")
+    if ix >= Z_bg.shape[1] or iy >= Z_bg.shape[1]:
+        raise ValueError("Requested PCs exceed reducer output dimensions")
+
+    plt.figure()
+    plt.scatter(Z_bg[:, ix], Z_bg[:, iy], s=8, alpha=0.25, label="Articles (fond)", color="blue")
+    plt.scatter(Z_recs[:, ix], Z_recs[:, iy], s=30, alpha=0.9, label="Recommandés", color="yellow")
+    if Z_prof is not None:
+        plt.scatter(Z_prof[0, ix], Z_prof[0, iy], s=120, label="Profil", color="red")
+    plt.title(f"Espace reducer (PC{pc_x} vs PC{pc_y}) | {title}")
+    plt.xlabel(f"PC{pc_x}")
+    plt.ylabel(f"PC{pc_y}")
+    plt.legend()
+    plt.show()
+
+    # ---- optional annotation
+    if annotate_top:
+        if annotate_top is True:
+            n_annot = 5
+        else:
+            n_annot = int(annotate_top)
+        if n_annot > 0 and ("title" in recs_df.columns):
+            plt.figure()
+            plt.scatter(Z_bg[:, ix], Z_bg[:, iy], s=8, alpha=0.15)
+            plt.scatter(Z_recs[:, ix], Z_recs[:, iy], s=40, alpha=0.9)
+            if Z_prof is not None:
+                plt.scatter(Z_prof[0, ix], Z_prof[0, iy], s=160, marker="X")
+            for j in range(min(n_annot, Z_recs.shape[0])):
+                plt.text(Z_recs[j, ix], Z_recs[j, iy], str(recs_df.iloc[j]["title"])[:30] + "…")
+            plt.title(f"Espace reducer (PC{pc_x} vs PC{pc_y}) — top annoté")
+            plt.xlabel(f"PC{pc_x}")
+            plt.ylabel(f"PC{pc_y}")
+            plt.show()
+
+def plot_comparaison(
+    articles_df,
+    X_emb,              # (n_articles, 384) embeddings MiniLM alignés avec articles_df
+    scaler, pca,        # scaler + PCA fit sur embeddings
+    recs_tfidf_df=None, # df recos TF-IDF (doit contenir id_col)
+    recs_emb_df=None,   # df recos Embeddings (doit contenir id_col)
+    profile_emb=None,   # optionnel: (384,) ou (1,384)
+    est_prof=True, # si True, profile_emb est un vecteur profil utilisateur
+    id_col="id",
+    pc_x=1, pc_y=2,     # 1-indexed
+    title="",
+    sample_bg=12000,
+    annotate_top=None,
+    random_state=42
+):
+    rng = np.random.default_rng(random_state)
+
+    # --- 0) sécurités
+    if id_col not in articles_df.columns:
+        raise ValueError(f"articles_df doit contenir la colonne '{id_col}'")
+
+    n = len(articles_df)
+    if X_emb.shape[0] != n:
+        raise ValueError(f"X_emb doit être aligné avec articles_df: X_emb.shape[0]={X_emb.shape[0]} vs n={n}")
+
+    # mapping id -> index (position dans X_emb)
+    ids_all = articles_df[id_col].tolist()
+    id_to_pos = {k: i for i, k in enumerate(ids_all)}
+
+    def ids_to_pos(recs_df):
+        if recs_df is None:
+            return np.array([], dtype=int), []
+        if id_col not in recs_df.columns:
+            raise ValueError(f"recs_df doit contenir la colonne '{id_col}'")
+        ids = recs_df[id_col].tolist()
+        pos, missing = [], []
+        for _id in ids:
+            if _id in id_to_pos:
+                pos.append(id_to_pos[_id])
+            else:
+                missing.append(_id)
+        return np.array(pos, dtype=int), missing
+
+    pos_tfidf, miss_tfidf = ids_to_pos(recs_tfidf_df)
+    pos_emb,   miss_emb   = ids_to_pos(recs_emb_df)
+
+    if miss_tfidf:
+        print(f"[WARN] {len(miss_tfidf)} recos TF-IDF introuvables dans articles_df (ids non matchés).")
+    if miss_emb:
+        print(f"[WARN] {len(miss_emb)} recos Embeddings introuvables dans articles_df (ids non matchés).")
+
+    # --- 1) Projection PCA de tous les embeddings (ou fond échantillonné)
+    ix = pc_x - 1
+    iy = pc_y - 1
+
+    if sample_bg is not None and sample_bg < n:
+        bg_pos = rng.choice(n, size=sample_bg, replace=False)
+    else:
+        bg_pos = np.arange(n)
+
+    X_bg = np.asarray(X_emb[bg_pos], dtype=np.float32)
+    Z_bg = pca.transform(scaler.transform(X_bg))  # (bg, k)
+
+    # --- 2) Projection PCA des recos (via leurs embeddings)
+    Z_tfidf = None
+    if pos_tfidf.size > 0:
+        X_t = np.asarray(X_emb[pos_tfidf], dtype=np.float32)
+        Z_tfidf = pca.transform(scaler.transform(X_t))
+
+    Z_emb = None
+    if pos_emb.size > 0:
+        X_e = np.asarray(X_emb[pos_emb], dtype=np.float32)
+        Z_emb = pca.transform(scaler.transform(X_e))
+
+    # --- 3) Projection profil optionnel
+    Z_prof = None
+    prof_vec = None  # (384,) en float32 si dispo
+    if profile_emb is not None:
+        pe = np.asarray(profile_emb, dtype=np.float32)
+        if pe.ndim == 2 and pe.shape[0] == 1:
+            pe = pe.reshape(-1)
+        if pe.ndim != 1:
+            raise ValueError("profile_emb doit être de forme (384,) ou (1,384)")
+        prof_vec = pe
+        Z_prof = pca.transform(scaler.transform(prof_vec.reshape(1, -1)))  # (1, k)
+
+    # --- 3bis) Distances moyennes (dans l'espace embedding ORIGINAL, pas PCA 2D)
+    # Référence = profil si dispo, sinon "centralité" = moyenne des embeddings du fond (bg_pos)
+    ref_vec = None
+    if prof_vec is not None:
+        ref_vec = prof_vec.astype(np.float32)
+        if est_prof:
+            ref_label = "from user profile"
+        else:
+            ref_label = "from ref article"
+    else:
+        ref_vec = np.asarray(X_emb[bg_pos], dtype=np.float32).mean(axis=0)
+        ref_label = "from centrality"
+
+    def mean_l2_dist(ref, idx_pos):
+        if idx_pos is None or len(idx_pos) == 0:
+            return None
+        X_sel = np.asarray(X_emb[idx_pos], dtype=np.float32)
+        d = np.linalg.norm(X_sel - ref.reshape(1, -1), axis=1)
+        return float(d.mean())
+
+    dist_tfidf = mean_l2_dist(ref_vec, pos_tfidf)
+    dist_emb   = mean_l2_dist(ref_vec, pos_emb)
+
+    dist_tfidf_str = "NA" if dist_tfidf is None else f"{dist_tfidf:.3f}"
+    dist_emb_str   = "NA" if dist_emb is None else f"{dist_emb:.3f}"
+
+    title_main = (
+        f"Espace PCA embeddings (PC{pc_x} vs PC{pc_y}){title}"
+        f"\nDist TF-IDF : {dist_tfidf_str}, Dist Embed : {dist_emb_str} ({ref_label})"
+    )
+
+    # --- 4) Plot
+    plt.figure()
+    plt.scatter(Z_bg[:, ix], Z_bg[:, iy], s=8, alpha=0.20, label="Articles (fond)")
+
+    if Z_tfidf is not None:
+        plt.scatter(Z_tfidf[:, ix], Z_tfidf[:, iy], s=45, alpha=0.95, label="Recommandés TF-IDF", color="yellow")
+
+    if Z_emb is not None:
+        plt.scatter(Z_emb[:, ix], Z_emb[:, iy], s=60, alpha=0.95, label="Recommandés Embeddings", color="orange")
+
+    if Z_prof is not None:
+        if est_prof:
+            plt.scatter(Z_prof[0, ix], Z_prof[0, iy], s=100, label="Profil", color="red")
+        else:
+            plt.scatter(Z_prof[0, ix], Z_prof[0, iy], s=100, label="Article de référence", color="white")
+
+    plt.title(title_main)
+    plt.xlabel(f"PC{pc_x}")
+    plt.ylabel(f"PC{pc_y}")
+    plt.legend()
+    plt.show()
+
+    # --- 5) Annotation optionnelle (top N de chaque liste)
+    if annotate_top and (recs_tfidf_df is not None or recs_emb_df is not None) and ("title" in articles_df.columns):
+        plt.figure()
+        plt.scatter(Z_bg[:, ix], Z_bg[:, iy], s=8, alpha=0.12)
+
+        if Z_tfidf is not None:
+            plt.scatter(Z_tfidf[:, ix], Z_tfidf[:, iy], s=55, alpha=0.95, marker="o", color="yellow")
+            if recs_tfidf_df is not None and id_col in recs_tfidf_df.columns:
+                for j, _pos in enumerate(pos_tfidf[:annotate_top]):
+                    t = str(articles_df.iloc[_pos].get("title", ""))[:28] + "…"
+                    plt.text(Z_tfidf[j, ix], Z_tfidf[j, iy], t)
+
+        if Z_emb is not None:
+            plt.scatter(Z_emb[:, ix], Z_emb[:, iy], s=70, alpha=0.95, marker="^", color="orange")
+            if recs_emb_df is not None and id_col in recs_emb_df.columns:
+                for j, _pos in enumerate(pos_emb[:annotate_top]):
+                    t = str(articles_df.iloc[_pos].get("title", ""))[:28] + "…"
+                    plt.text(Z_emb[j, ix], Z_emb[j, iy], t)
+
+        if Z_prof is not None:
+            plt.scatter(Z_prof[0, ix], Z_prof[0, iy], s=160, marker="X", color="red")
+
+        plt.title(title_main + " — annoté")
+        plt.xlabel(f"PC{pc_x}")
+        plt.ylabel(f"PC{pc_y}")
+        plt.show()

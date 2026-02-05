@@ -16,7 +16,7 @@ def get_embedding_model(model_name: str = LLM_URL):
     Returns:
         SentenceTransformer: Loaded model.
     """
-    return SentenceTransformer(model_name)
+    return SentenceTransformer(model_name, device="cpu")
 
 def encode_texts(
     texts: list[str],
@@ -41,7 +41,7 @@ def encode_texts(
         texts,
         batch_size=batch_size,
         show_progress_bar=show_progress_bar,
-        convert_to_numpy=True
+        convert_to_numpy=True, device="cpu"
     )
     if normalize:
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)

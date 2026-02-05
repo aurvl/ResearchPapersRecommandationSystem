@@ -12,13 +12,13 @@ from src.recommender import (
 from src.embeddings import get_or_compute_article_embeddings, encode_texts
 from src.get_trends import get_hot_terms, get_hot_term_list
 from loguru import logger
-from src.config import TFIDF_VECTORIZER_PATH
+from src.config import TFIDF_VECTORIZER_PATH, ARTICLES_PATH
 
 def main():
     # I. Charger les données
     logger.info("I. Loading data")
     print(">> Loading data...")
-    articles_df = load_articles()
+    articles_df = load_articles(ARTICLES_PATH)
     profile_kw_df = load_profile_keywords()
 
     print(f"  - {len(articles_df)} articles loaded")
