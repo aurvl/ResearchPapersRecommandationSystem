@@ -196,7 +196,7 @@ Si tu veux **charger les éléments déjà calculés** (au lieu de refit TF‑ID
 Puis :
 
 1) Dézippe `models.zip`
-2) Copie le contenu extrait dans le dossier `models/` du projet
+2) Copie le contenu extrait dans le dossier `models/` du projet. S'il n'existe pas il faudra en créer un.
 
 Tu dois obtenir des fichiers du style : `tfidf_vectorizer.joblib`, `X_tfidf.joblib`, `svd_model.joblib`, `Z_100.npy`, `article_embeddings_minilm.joblib`, `pca_minilm.joblib`, `Z_minilm.npy`.
 
