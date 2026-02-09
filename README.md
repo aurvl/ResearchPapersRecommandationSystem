@@ -158,7 +158,7 @@ Le code supporte une variable de debug :
 
 ## Données
 
-Tu as 2 options : utiliser le dataset fourni (recommandé pour reproduire la même expérience), ou collecter le tien.
+2 Options : utiliser le dataset fourni (recommandé pour reproduire la même expérience), ou collecter un autre.
 
 ### Option A — Réutiliser nos données (Google Drive)
 
@@ -169,15 +169,15 @@ Les fichiers de données sont disponibles ici :
 Deux façons de faire :
 
 1) Télécharger puis copier dans `data/`
-   - Télécharge le fichier du catalogue (idéalement `articles.parquet`) et colle-le dans `data/` (ex: `data/articles.parquet`).
+   - Télécharger le fichier du catalogue (idéalement `articles.parquet`) et le coller dans `data/` (ex: `data/articles.parquet`).
 
 2) Utiliser les URLs Drive via la config
-   - Dans `src/config.py`, tu peux décommenter les lignes `ARTICLES_PATH = "https://drive.google.com/file/d/..."` (CSV ou parquet) selon ton besoin.
+   - Dans `src/config.py`, il faut décommenter les lignes `ARTICLES_PATH = "https://drive.google.com/file/d/..."` (CSV ou parquet) selon le besoin.
    - Recommandation : pour éviter les limitations Drive (confirm download / gros fichiers), le plus fiable reste de télécharger puis mettre le fichier localement dans `data/`.
 
 ### Option B — Collecter ton propre dataset (OpenAlex)
 
-Si tu veux reconstruire un corpus à toi :
+Si l'on désire reconstruire un corpus :
 
 ```bash
 python data/collect_articles.py
@@ -185,20 +185,20 @@ python data/collect_articles.py
 
 Le script construit un dataset (2010–2025) à partir d’OpenAlex, déduplique par `id`, puis sauvegarde un parquet local (par défaut `data/articles.parquet`).
 
-Ensuite, assure-toi que `ARTICLES_PATH` dans `src/config.py` pointe bien vers ton fichier local.
+Ensuite, s'assurer que `ARTICLES_PATH` dans `src/config.py` pointe bien vers ton fichier local.
 
 ## Reproduire l’expérience sans ré-entraîner (TF‑IDF / SVD / PCA / embeddings)
 
-Si tu veux **charger les éléments déjà calculés** (au lieu de refit TF‑IDF / recalculer embeddings / refaire SVD/PCA), télécharge `models.zip` depuis le même Google Drive :
+Pour **charger les éléments déjà calculés** (au lieu de refit TF‑IDF / recalculer embeddings / refaire SVD/PCA), télécharger `models.zip` depuis le même Google Drive :
 
 - https://drive.google.com/drive/folders/1xj1iG3RwSf0PYftbxBOb-UBFU2svqOms
 
 Puis :
 
-1) Dézippe `models.zip`
-2) Copie le contenu extrait dans le dossier `models/` du projet. S'il n'existe pas il faudra en créer un.
+1) Dézipper `models.zip`
+2) Copier le contenu extrait dans le dossier `models/` du projet. S'il n'existe pas il faudra en créer un.
 
-Tu dois obtenir des fichiers du style : `tfidf_vectorizer.joblib`, `X_tfidf.joblib`, `svd_model.joblib`, `Z_100.npy`, `article_embeddings_minilm.joblib`, `pca_minilm.joblib`, `Z_minilm.npy`.
+Vous devez obtenir des fichiers du style : `tfidf_vectorizer.joblib`, `X_tfidf.joblib`, `svd_model.joblib`, `Z_100.npy`, `article_embeddings_minilm.joblib`, `pca_minilm.joblib`, `Z_minilm.npy`.
 
 ### Format attendu du CSV
 
